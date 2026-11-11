@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Manajemen Surat Masuk & Keluar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Inter & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navbar -->
+    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-800 p-2.5 rounded-xl shadow-inner border border-indigo-700">
+                    <i class="fa-solid fa-envelope-open-text text-indigo-300 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">Surat masuk keluar desa sangen</h1>
+                    <p class="text-xs text-indigo-300 hidden sm:block">Sistem Informasi Surat Masuk & Keluar Terpadu</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span id="sync-status" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span class="w-2 h-2 mr-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    Menghubungkan...
+                </span>
+                <div id="user-display" class="text-xs text-indigo-200 hidden md:block"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+            <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-sm transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('masuk')" id="btn-tab-masuk" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-200 transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-inbox"></i>
+                <span>Surat Masuk</span>
+            </button>
+            <button onclick="switchTab('keluar')" id="btn-tab-keluar" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-200 transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Surat Keluar</span>
+            </button>
+        </div>
+
+        <!-- TAB: DASHBOARD -->
+        <section id="tab-dashboard" class="space-y-6">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-indigo-50/80 text-8xl font-black pointer-events-none">
+                        <i class="fa-solid fa-inbox"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Surat Masuk</p>
+                        <h3 id="stat-masuk" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-xs text-emerald-600 font-medium mt-2 flex items-center"><i class="fa-solid fa-arrow-trend-up mr-1"></i> Data diperbarui real-time</p>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-sm relative z-10">
+                        <i class="fa-solid fa-inbox"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-sky-50/80 text-8xl font-black pointer-events-none">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Surat Keluar</p>
+                        <h3 id="stat-keluar" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-xs text-sky-600 font-medium mt-2 flex items-center"><i class="fa-solid fa-arrow-trend-up mr-1"></i> Data diperbarui real-time</p>
+                    </div>
+                    <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl shadow-sm relative z-10">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-amber-50/80 text-8xl font-black pointer-events-none">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Arsip Surat</p>
+                        <h3 id="stat-total" class="text-3xl font-bold text-slate-900 mt-1">0</h3>
+                        <p class="text-xs text-amber-600 font-medium mt-2 flex items-center"><i class="fa-solid fa-database mr-1"></i> Tersimpan di Firebase</p>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl shadow-sm relative z-10">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action & Recent Overview -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Ringkasan Cepat Surat Masuk -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 flex items-center"><i class="fa-solid fa-clock-rotate-left text-indigo-600 mr-2"></i> Surat Masuk Terbaru</h4>
+                        <button onclick="switchTab('masuk')" class="text-xs text-indigo-600 hover:underline font-semibold">Lihat Semua</button>
+                    </div>
+                    <div id="recent-masuk-list" class="space-y-3">
+                        <div class="text-center py-6 text-slate-400 text-sm">Memuat data...</div>
+                    </div>
+                </div>
+
+                <!-- Ringkasan Cepat Surat Keluar -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 flex items-center"><i class="fa-solid fa-clock-rotate-left text-sky-600 mr-2"></i> Surat Keluar Terbaru</h4>
+                        <button onclick="switchTab('keluar')" class="text-xs text-sky-600 hover:underline font-semibold">Lihat Semua</button>
+                    </div>
+                    <div id="recent-keluar-list" class="space-y-3">
+                        <div class="text-center py-6 text-slate-400 text-sm">Memuat data...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: SURAT MASUK -->
+        <section id="tab-masuk" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Daftar Surat Masuk</h3>
+                        <p class="text-xs text-slate-500">Kelola dan catat semua surat yang masuk dari instansi/pihak luar.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openModal('masuk')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Tambah Surat Masuk</span>
+                        </button>
+                        <button onclick="exportCSV('masuk')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center space-x-2" title="Ekspor CSV">
+                            <i class="fa-solid fa-file-csv"></i>
+                            <span class="hidden sm:inline">Ekspor</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <i class="fa-solid fa-search text-slate-400"></i>
+                    <input type="text" id="search-masuk" oninput="filterData('masuk')" placeholder="Cari nomor surat, pengirim, atau perihal..." class="w-full bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400">
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/70 text-slate-600 text-xs font-semibold uppercase tracking-wider">
+                                <th class="p-3.5">No. Surat & Tanggal</th>
+                                <th class="p-3.5">Pengirim</th>
+                                <th class="p-3.5">Perihal</th>
+                                <th class="p-3.5">Keterangan / Lokasi Arsip</th>
+                                <th class="p-3.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-masuk-body" class="divide-y divide-slate-100 text-sm">
+                            <tr><td colspan="5" class="p-6 text-center text-slate-400">Memuat data surat masuk...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB: SURAT KELUAR -->
+        <section id="tab-keluar" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Daftar Surat Keluar</h3>
+                        <p class="text-xs text-slate-500">Kelola dan catat semua surat yang dikirim keluar instansi.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openModal('keluar')" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Tambah Surat Keluar</span>
+                        </button>
+                        <button onclick="exportCSV('keluar')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold transition-all flex items-center space-x-2" title="Ekspor CSV">
+                            <i class="fa-solid fa-file-csv"></i>
+                            <span class="hidden sm:inline">Ekspor</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="flex items-center space-x-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <i class="fa-solid fa-search text-slate-400"></i>
+                    <input type="text" id="search-keluar" oninput="filterData('keluar')" placeholder="Cari nomor surat, tujuan, atau perihal..." class="w-full bg-transparent border-none outline-none text-sm text-slate-700 placeholder-slate-400">
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto rounded-xl border border-slate-100">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/70 text-slate-600 text-xs font-semibold uppercase tracking-wider">
+                                <th class="p-3.5">No. Surat & Tanggal</th>
+                                <th class="p-3.5">Tujuan</th>
+                                <th class="p-3.5">Perihal</th>
+                                <th class="p-3.5">Keterangan / Penandatangan</th>
+                                <th class="p-3.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-keluar-body" class="divide-y divide-slate-100 text-sm">
+                            <tr><td colspan="5" class="p-6 text-center text-slate-400">Memuat data surat keluar...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL FORM INPUT -->
+    <div id="form-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden transform transition-all my-8">
+            <div class="bg-indigo-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 id="modal-title" class="font-bold text-base flex items-center"><i class="fa-solid fa-pen-to-square mr-2"></i> Tambah Surat</h3>
+                <button onclick="closeModal()" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="surat-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-type" value="masuk">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nomor Surat *</label>
+                        <input type="text" id="no_surat" required placeholder="Contoh: 005/UM/2026" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:bg-white focus:border-indigo-600 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label id="label-tanggal" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Tanggal Terima *</label>
+                        <input type="date" id="tanggal" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:bg-white focus:border-indigo-600 outline-none transition-all">
+                    </div>
+                </div>
+
+                <div id="field-pengirim-container">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Pengirim *</label>
+                    <input type="text" id="pengirim_tujuan" required placeholder="Nama instansi atau pengirim surat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:bg-white focus:border-indigo-600 outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Perihal *</label>
+                    <textarea id="perihal" rows="2" required placeholder="Ringkasan isi atau perihal surat..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:bg-white focus:border-indigo-600 outline-none transition-all"></textarea>
+                </div>
+
+                <div id="field-extra-container">
+                    <label id="label-extra" class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Keterangan / Lokasi Arsip</label>
+                    <input type="text" id="keterangan_file" placeholder="Contoh: Lemari A1 atau Link GDrive" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm focus:bg-white focus:border-indigo-600 outline-none transition-all">
+                </div>
+
+                <div class="pt-4 flex items-center justify-end space-x-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-all">Batal</button>
+                    <button type="submit" id="submit-btn" class="px-5 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>Simpan ke Firebase</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DETAIL SURAT -->
+    <div id="detail-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden transform transition-all">
+            <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+                <h3 class="font-bold text-base flex items-center"><i class="fa-solid fa-circle-info mr-2"></i> Detail Surat</h3>
+                <button onclick="closeDetailModal()" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="detail-content" class="p-6 space-y-4 text-sm">
+                <!-- Filled via JS -->
+            </div>
+            <div class="bg-slate-50 px-6 py-3 border-t border-slate-100 flex justify-end">
+                <button onclick="closeDetailModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-sm font-semibold">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM NOTIFICATION MODAL -->
+    <div id="alert-modal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center space-y-4">
+            <div id="alert-icon" class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mx-auto">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h4 id="alert-title" class="font-bold text-slate-900 text-lg">Berhasil</h4>
+            <p id="alert-message" class="text-sm text-slate-600">Pesan notifikasi...</p>
+            <button onclick="closeAlertModal()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm">OK</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Konfigurasi Firebase Milik Anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyBduyzyJ2QK_T4Q_IKaZjOb3JC74cvKP54",
+            authDomain: "surat-masuk-keluar-kaurumum.firebaseapp.com",
+            databaseURL: "https://surat-masuk-keluar-kaurumum-default-rtdb.firebaseio.com",
+            projectId: "surat-masuk-keluar-kaurumum",
+            storageBucket: "surat-masuk-keluar-kaurumum.firebasestorage.app",
+            messagingSenderId: "697734923711",
+            appId: "1:697734923711:web:15b8e4f0f7befcce918d0a",
+            measurementId: "G-NJ4VM2S04E"
+        };
+
+        let app, db, auth;
+        let currentUser = null;
+        let suratMasukData = [];
+        let suratKeluarData = [];
+
+        // DOM Elements
+        const syncStatusEl = document.getElementById('sync-status');
+        const userDisplayEl = document.getElementById('user-display');
+
+        async function initFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                await signInAnonymously(auth);
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUser = user;
+                        userDisplayEl.textContent = `ID Sesi: ${user.uid.substring(0, 8)}...`;
+                        syncStatusEl.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Terhubung ke Firebase`;
+                        syncStatusEl.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+                        
+                        initRealtimeListeners();
+                    } else {
+                        syncStatusEl.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-red-400"></span> Belum Masuk`;
+                        syncStatusEl.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-300 border border-red-500/30";
+                    }
+                });
+            } catch (err) {
+                console.error("Firebase init error:", err);
+                syncStatusEl.innerHTML = `<span class="w-2 h-2 mr-1.5 rounded-full bg-amber-400"></span> Gagal Terhubung`;
+                syncStatusEl.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30";
+            }
+        }
+
+        function initRealtimeListeners() {
+            if (!currentUser) return;
+
+            const masukColRef = collection(db, 'surat_masuk');
+            onSnapshot(masukColRef, (snapshot) => {
+                suratMasukData = [];
+                snapshot.forEach((docSnap) => {
+                    suratMasukData.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderMasukTable(suratMasukData);
+                updateDashboardStats();
+            });
+
+            const keluarColRef = collection(db, 'surat_keluar');
+            onSnapshot(keluarColRef, (snapshot) => {
+                suratKeluarData = [];
+                snapshot.forEach((docSnap) => {
+                    suratKeluarData.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderKeluarTable(suratKeluarData);
+                updateDashboardStats();
+            });
+        }
+
+        window.switchTab = function(tabName) {
+            ['dashboard', 'masuk', 'keluar'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`btn-tab-${t}`);
+                btn.className = "px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-200 transition-all flex items-center space-x-2";
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+            activeBtn.className = `px-4 py-2 text-sm font-semibold rounded-lg ${tabName === 'keluar' ? 'bg-sky-600' : 'bg-indigo-600'} text-white shadow-sm transition-all flex items-center space-x-2`;
+        }
+
+        function updateDashboardStats() {
+            const totalMasuk = suratMasukData.length;
+            const totalKeluar = suratKeluarData.length;
+            document.getElementById('stat-masuk').textContent = totalMasuk;
+            document.getElementById('stat-keluar').textContent = totalKeluar;
+            document.getElementById('stat-total').textContent = totalMasuk + totalKeluar;
+
+            const recentMasukContainer = document.getElementById('recent-masuk-list');
+            const sortedMasuk = [...suratMasukData].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 3);
+            recentMasukContainer.innerHTML = sortedMasuk.length === 0 ? `<p class="text-xs text-slate-400 py-3 text-center">Belum ada data surat masuk.</p>` : sortedMasuk.map(item => `
+                <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-600">${escapeHtml(item.no_surat)}</span>
+                        <h5 class="text-xs font-semibold text-slate-800 line-clamp-1">${escapeHtml(item.perihal)}</h5>
+                        <p class="text-[10px] text-slate-500">Dari: ${escapeHtml(item.pengirim_tujuan)} (${escapeHtml(item.tanggal)})</p>
+                    </div>
+                </div>
+            `).join('');
+
+            const recentKeluarContainer = document.getElementById('recent-keluar-list');
+            const sortedKeluar = [...suratKeluarData].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 3);
+            recentKeluarContainer.innerHTML = sortedKeluar.length === 0 ? `<p class="text-xs text-slate-400 py-3 text-center">Belum ada data surat keluar.</p>` : sortedKeluar.map(item => `
+                <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-sky-600">${escapeHtml(item.no_surat)}</span>
+                        <h5 class="text-xs font-semibold text-slate-800 line-clamp-1">${escapeHtml(item.perihal)}</h5>
+                        <p class="text-[10px] text-slate-500">Tujuan: ${escapeHtml(item.pengirim_tujuan)} (${escapeHtml(item.tanggal)})</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMasukTable(data) {
+            const tbody = document.getElementById('table-masuk-body');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Tidak ada data surat masuk ditemukan.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map(item => `
+                <tr class="hover:bg-slate-50/80 transition-all">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-900 block">${escapeHtml(item.no_surat)}</span>
+                        <span class="text-xs text-slate-500">${escapeHtml(item.tanggal)}</span>
+                    </td>
+                    <td class="p-3.5 font-medium text-slate-700">${escapeHtml(item.pengirim_tujuan)}</td>
+                    <td class="p-3.5 text-slate-600 max-w-xs truncate">${escapeHtml(item.perihal)}</td>
+                    <td class="p-3.5 text-xs text-slate-500">${escapeHtml(item.keterangan_file || '-')}</td>
+                    <td class="p-3.5 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewDetail('masuk', '${item.id}')" class="p-1.5 text-slate-500 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 rounded-lg transition-all" title="Detail"><i class="fa-solid fa-eye"></i></button>
+                            <button onclick="deleteSurat('masuk', '${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 bg-slate-100 hover:bg-rose-50 rounded-lg transition-all" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderKeluarTable(data) {
+            const tbody = document.getElementById('table-keluar-body');
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Tidak ada data surat keluar ditemukan.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = data.map(item => `
+                <tr class="hover:bg-slate-50/80 transition-all">
+                    <td class="p-3.5">
+                        <span class="font-bold text-slate-900 block">${escapeHtml(item.no_surat)}</span>
+                        <span class="text-xs text-slate-500">${escapeHtml(item.tanggal)}</span>
+                    </td>
+                    <td class="p-3.5 font-medium text-slate-700">${escapeHtml(item.pengirim_tujuan)}</td>
+                    <td class="p-3.5 text-slate-600 max-w-xs truncate">${escapeHtml(item.perihal)}</td>
+                    <td class="p-3.5 text-xs text-slate-500">${escapeHtml(item.keterangan_file || '-')}</td>
+                    <td class="p-3.5 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="viewDetail('keluar', '${item.id}')" class="p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-sky-50 rounded-lg transition-all" title="Detail"><i class="fa-solid fa-eye"></i></button>
+                            <button onclick="deleteSurat('keluar', '${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 bg-slate-100 hover:bg-rose-50 rounded-lg transition-all" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.filterData = function(type) {
+            const query = document.getElementById(`search-${type}`).value.toLowerCase();
+            const dataList = type === 'masuk' ? suratMasukData : suratKeluarData;
+            const filtered = dataList.filter(item => 
+                item.no_surat.toLowerCase().includes(query) ||
+                item.pengirim_tujuan.toLowerCase().includes(query) ||
+                item.perihal.toLowerCase().includes(query)
+            );
+            type === 'masuk' ? renderMasukTable(filtered) : renderKeluarTable(filtered);
+        };
+
+        window.openModal = function(type) {
+            document.getElementById('form-type').value = type;
+            const modalTitle = document.getElementById('modal-title');
+            const pengirimLabel = document.querySelector('#field-pengirim-container label');
+            const tanggalLabel = document.getElementById('label-tanggal');
+            const extraLabel = document.getElementById('label-extra');
+            const extraInput = document.getElementById('keterangan_file');
+
+            if (type === 'masuk') {
+                modalTitle.innerHTML = `<i class="fa-solid fa-plus-circle mr-2"></i> Tambah Surat Masuk`;
+                tanggalLabel.textContent = 'Tanggal Terima *';
+                pengirimLabel.textContent = 'Pengirim *';
+                document.getElementById('pengirim_tujuan').placeholder = 'Nama instansi atau pengirim surat';
+                extraLabel.textContent = 'Keterangan / Lokasi Arsip';
+                extraInput.placeholder = 'Contoh: Lemari Arsip A1';
+            } else {
+                modalTitle.innerHTML = `<i class="fa-solid fa-plus-circle mr-2"></i> Tambah Surat Keluar`;
+                tanggalLabel.textContent = 'Tanggal Kirim *';
+                pengirimLabel.textContent = 'Tujuan *';
+                document.getElementById('pengirim_tujuan').placeholder = 'Nama instansi atau pihak tujuan surat';
+                extraLabel.textContent = 'Penandatangan';
+                extraInput.placeholder = 'Contoh: Kepala Desa / Sekretaris Desa';
+            }
+
+            document.getElementById('surat-form').reset();
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+            document.getElementById('form-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('form-modal').classList.add('hidden');
+        };
+
+        // Form Submit Handler (Tanpa Storage, Super Cepat!)
+        window.handleFormSubmit = async function(event) {
+            event.preventDefault();
+            const type = document.getElementById('form-type').value;
+            const no_surat = document.getElementById('no_surat').value.trim();
+            const tanggal = document.getElementById('tanggal').value;
+            const pengirim_tujuan = document.getElementById('pengirim_tujuan').value.trim();
+            const perihal = document.getElementById('perihal').value.trim();
+            const keterangan_file = document.getElementById('keterangan_file').value.trim();
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> Menyimpan...`;
+
+            try {
+                const payload = {
+                    no_surat,
+                    tanggal,
+                    pengirim_tujuan,
+                    perihal,
+                    keterangan_file,
+                    created_at: new Date().toISOString()
+                };
+
+                const collectionName = type === 'masuk' ? 'surat_masuk' : 'surat_keluar';
+                await addDoc(collection(db, collectionName), payload);
+
+                closeModal();
+                showAlert('Berhasil', 'Data surat berhasil disimpan ke database!', 'success');
+            } catch (err) {
+                console.error("Error saving document:", err);
+                showAlert('Gagal', 'Terjadi kesalahan saat menyimpan data: ' + err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Simpan ke Firebase</span>`;
+            }
+        };
+
+        window.deleteSurat = async function(type, id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus arsip surat ini?')) return;
+            try {
+                const collectionName = type === 'masuk' ? 'surat_masuk' : 'surat_keluar';
+                await deleteDoc(doc(db, collectionName, id));
+                showAlert('Berhasil', 'Arsip surat berhasil dihapus.', 'success');
+            } catch (err) {
+                console.error("Error deleting:", err);
+                showAlert('Gagal', 'Gagal menghapus surat: ' + err.message, 'error');
+            }
+        };
+
+        window.viewDetail = function(type, id) {
+            const dataList = type === 'masuk' ? suratMasukData : suratKeluarData;
+            const item = dataList.find(i => i.id === id);
+            if (!item) return;
+
+            const detailContent = document.getElementById('detail-content');
+            const titleType = type === 'masuk' ? 'Surat Masuk' : 'Surat Keluar';
+            const pengirimLabel = type === 'masuk' ? 'Pengirim' : 'Tujuan';
+            const extraLabel = type === 'masuk' ? 'Keterangan / Lokasi Arsip' : 'Penandatangan';
+
+            detailContent.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${type === 'masuk' ? 'bg-indigo-100 text-indigo-700' : 'bg-sky-100 text-sky-700'}">${titleType}</span>
+                        <span class="text-xs text-slate-500">${escapeHtml(item.tanggal)}</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Nomor Surat</span>
+                        <p class="font-bold text-slate-900 text-base">${escapeHtml(item.no_surat)}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">${pengirimLabel}</span>
+                        <p class="font-medium text-slate-800">${escapeHtml(item.pengirim_tujuan)}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Perihal</span>
+                        <p class="text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">${escapeHtml(item.perihal)}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">${extraLabel}</span>
+                        <p class="text-slate-700">${escapeHtml(item.keterangan_file || '-')}</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('detail-modal').classList.remove('hidden');
+        };
+
+        window.closeDetailModal = function() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        };
+
+        window.exportCSV = function(type) {
+            const dataList = type === 'masuk' ? suratMasukData : suratKeluarData;
+            if (dataList.length === 0) {
+                showAlert('Perhatian', 'Tidak ada data untuk diekspor.', 'error');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "No. Surat,Tanggal,Pengirim/Tujuan,Perihal,Keterangan\r\n";
+
+            dataList.forEach(item => {
+                const row = [
+                    `"${(item.no_surat || '').replace(/"/g, '""')}"`,
+                    `"${(item.tanggal || '').replace(/"/g, '""')}"`,
+                    `"${(item.pengirim_tujuan || '').replace(/"/g, '""')}"`,
+                    `"${(item.perihal || '').replace(/"/g, '""')}"`,
+                    `"${(item.keterangan_file || '').replace(/"/g, '""')}"`
+                ];
+                csvContent += row.join(",") + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `data_surat_${type}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        window.showAlert = function(title, message, type = 'success') {
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-message').textContent = message;
+            const iconEl = document.getElementById('alert-icon');
+            if (type === 'success') {
+                iconEl.className = "w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mx-auto";
+                iconEl.innerHTML = `<i class="fa-solid fa-check"></i>`;
+            } else {
+                iconEl.className = "w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mx-auto";
+                iconEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+            }
+            document.getElementById('alert-modal').classList.remove('hidden');
+        };
+
+        window.closeAlertModal = function() {
+            document.getElementById('alert-modal').classList.add('hidden');
+        };
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+
+        initFirebase();
+    </script>
+</body>
+</html>
